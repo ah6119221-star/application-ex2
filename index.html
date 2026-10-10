@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cipher ⁷³ — Exam Generator</title>
+<style>
+body{font-family:Tahoma,Arial,sans-serif;max-width:860px;margin:0 auto;padding:0 14px 30px;line-height:1.8;color:#1a1a1a;background:#f6f7fb}
+.bar{position:sticky;top:0;z-index:9;background:#0d1b2a;color:#fff;padding:8px 10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:0 -14px}
+.logo{font-size:22px;font-weight:bold;letter-spacing:1px;color:#f2b705}.logo small{display:block;font-size:11px;color:#9fb3c8;letter-spacing:0}
+.bar div{display:flex;gap:6px;flex-wrap:wrap}
+button{padding:6px 12px;border:0;border-radius:6px;font-size:14px;cursor:pointer;background:#fff;color:#0d1b2a}
+button.on{background:#f2b705;font-weight:bold}button.gen{background:#2ecc71;font-weight:bold}
+.paper{background:#fff;border:1px solid #ddd;border-radius:8px;padding:14px 18px;margin-top:12px}
+.head{text-align:center;border:2px solid #0d1b2a;border-radius:8px;padding:8px;margin-bottom:8px}
+.brand{font-size:20px;font-weight:bold;color:#0d1b2a}
+h2{background:#e3eaf4;padding:6px 10px;border-radius:6px;color:#0d1b2a}h3{color:#0d1b2a;margin:12px 0 2px}
+table{border-collapse:collapse;margin:8px 0;direction:ltr}td,th{border:1px solid #888;padding:3px 10px;text-align:center}th{background:#eee}
+code{background:#f1f1f1;padding:1px 5px;border-radius:4px;direction:ltr;unicode-bidi:embed;font-family:Consolas,monospace}
+.key{border-top:3px dashed #999;margin-top:22px;background:#fffdf3}
+.sig{text-align:center;color:#555;font-style:italic;margin-top:14px}
+@media print{.bar{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="bar">
+ <div class="logo">Cipher ⁷³<small id="tag"></small></div>
+ <div>
+  <button id="bAr" onclick="setL('ar')">العربية</button>
+  <button id="bEn" onclick="setL('en')">English</button>
+  <button id="bKey" onclick="toggleKey()"></button>
+  <button id="bPr" onclick="print()"></button>
+  <button id="bGen" class="gen" onclick="newExam()"></button>
+ </div>
+</div>
+<div class="paper" id="out"></div>
+
+<script>
+// ---------- random ----------
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let R,L='ar',M,SHOW=false;
+const ri=(a,b)=>a+Math.floor(R()*(b-a+1)),pick=a=>a[ri(0,a.length-1)];
+const shuf=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const c=s=>'<code>'+esc(s)+'</code>',P=(a,e)=>[a,e],T=(x,i)=>Array.isArray(x)?x[i]:x;
+
+const take=(a,n,t)=>{a=shuf(a).slice(0,n);const b=Math.floor(t/n),r=t-b*n;return a.map((x,i)=>[b+(i<r?1:0),x[1],x[2]])};
+const U={ar:{tag:'مولّد امتحانات تطبيقات الحاسوب 2',key:'🔑 مفتاح الحل',pr:'🖨 طباعة',gen:'🎲 امتحان جديد',uni:'جامعة العلوم والتكنولوجيا',dept:'تخصص تكنولوجيا المعلومات',course:'المادة: تطبيقات الحاسوب 2',ver:'النسخة رقم',time:'الزمن: 90 دقيقة | الدرجة: 100',by:'إعداد وتوقيع',p1:'الجزء الأول: النظري (30 درجة)',p2:'الجزء الثاني: العملي (70 درجة)',q1:'السؤال الأول: اختر الإجابة الصحيحة (10 درجات، درجتان لكل فقرة)',q2:'السؤال الثاني: صح أم خطأ مع تصحيح الخطأ (10 درجات، درجتان لكل فقرة)',q3:'السؤال الثالث: اذكر السبب (10 درجات، 5 لكل فقرة)',t:['المهمة الأولى: Excel','المهمة الثانية: Word','المهمة الثالثة: PowerPoint'],d:' د',kh:'مفتاح الحل',tr:'صح',fa:'خطأ',L:['أ','ب','ج','د'],tot:'التوزيع: نظري 30 + عملي 70 (25 + 20 + 25) = 100',dt:'البيانات في النطاق A1:E7 (العناوين في الصف 1):',ex:'اكتب الدالة الدقيقة / أجب:'},
+en:{tag:'Computer Applications II Exam Generator',key:'🔑 Answer Key',pr:'🖨 Print',gen:'🎲 New Exam',uni:'University of Science and Technology',dept:'Information Technology',course:'Course: Computer Applications II',ver:'Version',time:'Time: 90 minutes | Total: 100',by:'Prepared & signed by',p1:'Part 1: Theoretical (30 marks)',p2:'Part 2: Practical (70 marks)',q1:'Q1: Choose the correct answer (10 marks, 2 each)',q2:'Q2: True or False — correct the false ones (10 marks, 2 each)',q3:'Q3: Give the reason (10 marks, 5 each)',t:['Task 1: Excel','Task 2: Word','Task 3: PowerPoint'],d:' marks',kh:'Answer Key',tr:'True',fa:'False',L:['a','b','c','d'],tot:'Marks: Theory 30 + Practical 70 (25 + 20 + 25) = 100',dt:'Data in range A1:E7 (headers in row 1):',ex:'Write the exact formula / answer:'}};
+
+// ---------- theory banks ----------
+const MC=[
+{q:P('في MATCH، إذا حُذف match_type فإن Excel يبحث عن:','In MATCH, if match_type is omitted, Excel finds:'),ok:P('أكبر قيمة ≤ المطلوبة (بيانات تصاعدية)','Largest value ≤ lookup (ascending data)'),bad:[P('تطابقاً تاماً','Exact match'),P('أصغر قيمة ≥ المطلوبة','Smallest value ≥ lookup'),P('#N/A دائماً','Always #N/A')]},
+{q:P('أي ميزة في Word تتيح اتجاهاً وترويسة مختلفين لجزء واحد من المستند؟','Which Word feature gives one part of a document its own orientation and header?'),ok:'Section Break (Next Page)',bad:['Style','Index','Preview Results']},
+{q:P('في OneDrive، أي إجراء يُبطل رابط المشاركة؟','In OneDrive, which action invalidates a sharing link?'),ok:'Manage Access → Remove Link',bad:['Allow Editing','Get a Link','Change to View Only']},
+{q:P('أي خيار في Timing ينفّذ الانتقال تلقائياً بعد مدة؟','Which Timing option runs the transition automatically after a delay?'),ok:'After',bad:['On Mouse Click','Apply to All','Preview']},
+{q:P('تنظّم أداة Gamma AI المحتوى على شكل:','Gamma AI organizes content as:'),ok:P('بطاقات (Cards)','Cards'),bad:['Worksheets','Slide Masters','Merge Fields']},
+{q:P('كيف تُدرج جدول محتويات تلقائياً في Word؟','How do you insert an automatic table of contents in Word?'),ok:'References → Table of Contents',bad:['Insert → Header','Review → Protect','Mailings → Finish & Merge']},
+{q:P('اختصار تعليم مدخل الفهرس (Mark Entry):','Shortcut to mark an index entry:'),ok:'Alt+Shift+X',bad:['Ctrl+Alt+1','Ctrl+Shift+N','Alt+Shift+←']},
+{q:P('أي ميزة تجعل النقر على كائن يشغّل تأثير كائن آخر؟','Which feature lets clicking one object start another object’s animation?'),ok:'Trigger',bad:['Animation Painter','Slide Master','Transitions']},
+{q:P('مسار تشفير ملف Excel بكلمة مرور:','Path to encrypt an Excel file with a password:'),ok:'File → Info → Protect Workbook → Encrypt with Password',bad:['Review → Protect Sheet','Data → Data Validation','Insert → PivotTable']},
+{q:P('اختصار إيقاف تسجيل الشاشة في PowerPoint:','Shortcut to stop screen recording in PowerPoint:'),ok:'Windows + Shift + Q',bad:['Windows + Shift + R','Windows + Shift + A','Ctrl + Shift + Q']}
+,{q:P('أي تبويب يحتوي Data Validation؟','Which tab contains Data Validation?'),ok:'Data',bad:['Review','Insert','Home']}
+,{q:P('ماذا تُرجع INDEX(A2:C6,3,2)؟','What does INDEX(A2:C6,3,2) return?'),ok:P('قيمة الصف 3 والعمود 2 من النطاق','Value in row 3, column 2 of the range'),bad:[P('قيمة الصف 2 والعمود 3','Value in row 2, column 3'),P('رقم الصف 3 فقط','Only the row number 3'),P('مجموع العمود 2','Sum of column 2')]}
+,{q:P('اختصار تطبيق Heading 1 في Word:','Shortcut to apply Heading 1 in Word:'),ok:'Ctrl+Alt+1',bad:['Ctrl+Shift+N','Alt+Shift+X','Ctrl+Alt+3']}
+,{q:P('أقل مساحة OneDrive لكل مستخدم في Microsoft 365 حسب المادة:','Minimum OneDrive storage per user in Microsoft 365 (per the course):'),ok:'1 TB',bad:['5 GB','100 GB','500 GB']}
+,{q:P('أي أمر ينتج خطاباً منفصلاً لكل مستلم؟','Which command produces a separate letter per recipient?'),ok:'Finish & Merge → Edit Individual Documents',bad:['Preview Results','Insert Merge Field','Select Recipients']}
+,{q:P('أي أمر يضيف تأثيراً دون استبدال التأثير القديم؟','Which command adds an effect without replacing the old one?'),ok:'Add Animation',bad:['Effect Options','Animation Painter','Trigger']}
+,{q:P('أي Placeholder ينشئ مربع نص بنقاط حتى خمسة مستويات؟','Which placeholder creates a bulleted text box up to five levels?'),ok:'Text',bad:['Picture','Media','Chart']}
+,{q:P('مسار حماية هيكل المصنف:','Path to protect the workbook structure:'),ok:'Review → Protect Workbook → Structure',bad:['Data → Data Validation','File → Print','Insert → Table']}
+,{q:P('صيغة قالب Word المخصص:','File type of a custom Word template:'),ok:'.dotx',bad:['.docx','.xlsx','.pptx']}
+,{q:P('أي أداة تلخّص البيانات بالسحب والإفلات؟','Which tool summarizes data by drag and drop?'),ok:'PivotTable',bad:['Data Validation','Mail Merge','Slide Master']}
+];
+const TF=[
+{s:P('تستطيع VLOOKUP الإرجاع من عمود على يسار عمود البحث.','VLOOKUP can return from a column left of the lookup column.'),t:0,f:P('عمود البحث أول عمود؛ للبحث يساراً استخدم INDEX/MATCH.','The lookup column must be first; use INDEX/MATCH to look left.')},
+{s:P('النمط المُنشأ من فقرة يصبح تلقائياً جزءاً من القالب.','A style created from a paragraph automatically joins the template.'),t:0,f:P('يبقى في المستند الحالي؛ لإتاحته مستقبلاً يُبنى في قالب .dotx.','It stays in the current document; build it in a .dotx template for future use.')},
+{s:P('أنماط رسالة الخطأ في Data Validation: Stop وWarning وInformation.','Data Validation error styles: Stop, Warning, Information.'),t:1},
+{s:P('تعديل الشريحة العليا (Theme) في Slide Master ينعكس على كل التخطيطات.','Editing the top (Theme) slide in Slide Master affects all layouts.'),t:1},
+{s:P('Protect Workbook ← Structure يمنع تعديل محتوى الخلايا.','Protect Workbook → Structure prevents editing cell contents.'),t:0,f:P('يمنع إضافة/حذف/إخفاء/إعادة تسمية الأوراق؛ الخلايا تُحمى بـ Protect Sheet.','It blocks adding/deleting/hiding/renaming sheets; cells are protected via Protect Sheet.')},
+{s:P('الفيديو المضمّن من الإنترنت يحتاج اتصالاً بالإنترنت للتشغيل.','An online video in PowerPoint needs an internet connection to play.'),t:1},
+{s:P('يمكن ترك صفوف فارغة داخل البيانات قبل إنشاء PivotTable.','Blank rows may be left inside the data before creating a PivotTable.'),t:0,f:P('يجب تجنّب الصفوف والأعمدة الفارغة.','Blank rows and columns must be avoided.')},
+{s:P('Ctrl+A ثم F9 يحدّث جميع الحقول بما فيها الفهرس.','Ctrl+A then F9 updates all fields including the index.'),t:1},
+{s:P('منطقة Values في PivotTable تحتوي بيانات رقمية تُحسب (Sum, Count).','The PivotTable Values area holds numeric data to calculate (Sum, Count).'),t:1},
+{s:P('Animation Painter ينسخ تأثير الحركة من كائن إلى آخر.','Animation Painter copies an animation effect from one object to another.'),t:1}
+,{s:P('خيار Hide During Show يخفي أيقونة الصوت أثناء العرض.','Hide During Show hides the audio icon during the presentation.'),t:1}
+,{s:P('يتوقف تسجيل الشاشة بالاختصار Windows+Shift+Q.','Screen recording stops with Windows+Shift+Q.'),t:1}
+,{s:P('Link to File يضمّن الفيديو داخل ملف العرض.','Link to File embeds the video inside the presentation file.'),t:0,f:P('لا يضمّنه؛ يربط الملف فقط فيبقى العرض خفيفاً.','It does not embed it; it only links, keeping the file light.')}
+,{s:P('Apply to All يطبّق الانتقال على جميع الشرائح.','Apply to All applies the transition to every slide.'),t:1}
+,{s:P('جدول المحتويات التلقائي يعتمد على أنماط العناوين (Headings).','The automatic TOC relies on Heading styles.'),t:1}
+,{s:P('يمكن استرجاع كلمة مرور حماية الورقة بخيار مدمج في Excel.','A forgotten sheet-protection password can be recovered with a built-in Excel option.'),t:0,f:P('لا توجد وسيلة مدمجة لاسترجاعها.','There is no built-in way to recover it.')}
+,{s:P('Mark All يعلّم كل ظهور للمصطلح في الفهرس.','Mark All marks every occurrence of the term for the index.'),t:1}
+,{s:P('عند Remove Link لا يعود رابط المشاركة صالحاً.','After Remove Link the sharing link is no longer valid.'),t:1}
+,{s:P('تُكتب عناصر قائمة Data Validation مفصولة بنقطتين رأسيتين.','Data Validation list items are separated by colons.'),t:0,f:P('تُفصل بفواصل (commas).','They are separated by commas.')}
+,{s:P('تقبل MATCH نطاقاً مستطيلاً متعدد الأعمدة والصفوف.','MATCH accepts a rectangular multi-row, multi-column range.'),t:0,f:P('يجب أن يكون صفاً واحداً أو عموداً واحداً وإلا ظهر #N/A.','It must be one row or one column, otherwise #N/A.')}
+,{s:P('يتطلب Microsoft 365 Copilot اشتراكاً للاستخدام الكامل.','Full Microsoft 365 Copilot requires a subscription.'),t:1}
+,{s:P('Microsoft Teams من مكونات Microsoft 365 للتواصل والاجتماعات.','Microsoft Teams is a Microsoft 365 component for chat and meetings.'),t:1}
+,{s:P('تُضاف Slicers من Insert ← Slicer لتصفية PivotTable.','Slicers are added from Insert → Slicer to filter a PivotTable.'),t:1}
+,{s:P('يتحدّث PivotTable تلقائياً دون Refresh بعد تغيير البيانات المصدر.','A PivotTable updates automatically without Refresh after source data changes.'),t:0,f:P('يلزم Refresh من القائمة بزر الفأرة الأيمن.','You must right-click and choose Refresh.')}
+,{s:P('عند استخدام match_type = 0 يجب أن تكون البيانات مرتبة.','With match_type = 0 the data must be sorted.'),t:0,f:P('التطابق التام لا يتطلب ترتيباً.','Exact match does not require sorting.')}
+];
+const JU=[
+{q:P('يُنصح بـ FALSE في range_lookup عند البحث عن رمز منتج.','Why use FALSE as range_lookup when searching a product code?'),a:P('FALSE تطابق تام؛ الافتراضي TRUE تقريبي ويحتاج ترتيباً وقد يُرجع سجلاً خاطئاً.','FALSE forces an exact match; default TRUE is approximate, needs sorting and may return a wrong record.')},
+{q:P('يُفضَّل Link to File لفيديو كبير الحجم.','Why prefer Link to File for a very large video?'),a:P('لا يُضمّن الفيديو فيبقى الملف خفيفاً ويقل التأخير.','The video is not embedded, so the file stays light and avoids lag.')},
+{q:P('لماذا نلغي Link to Previous في ترويسة قسم أفقي؟','Why untick Link to Previous in a landscape section header?'),a:P('ليحمل القسم ترويسته الخاصة دون تغيير بقية الأقسام.','So the section gets its own header without changing the others.')},
+{q:P('لماذا INDEX/MATCH بدل VLOOKUP عندما لا يكون عمود البحث الأول؟','Why INDEX/MATCH instead of VLOOKUP when the lookup column is not first?'),a:P('لأن VLOOKUP ترجع فقط من أعمدة يمين عمود البحث بينما INDEX/MATCH مرنة الاتجاه.','VLOOKUP only returns columns to the right of the lookup column; INDEX/MATCH works in any direction.')},
+{q:P('لماذا نختار Update entire table عند إضافة عنوان جديد؟','Why choose Update entire table after adding a heading?'),a:P('لأن «page numbers only» لا يضيف العنوان الجديد للفهرس.','Because «page numbers only» does not add the new heading to the TOC.')}
+,{q:P('لماذا نستخدم Mark All في الفهرس؟','Why use Mark All when building an index?'),a:P('لتعليم جميع مرات ظهور المصطلح دفعة واحدة.','To mark every occurrence of the term at once.')}
+,{q:P('لماذا نضع كلمة مرور عند Protect Sheet؟ وما التحذير؟','Why set a password in Protect Sheet, and what is the warning?'),a:P('تمنع غيرك من إلغاء الحماية، ولا توجد وسيلة مدمجة لاسترجاعها إن نُسيت.','It stops others from unprotecting; a forgotten password cannot be recovered.')}
+,{q:P('لماذا نستخدم Slide Master بدل التنسيق شريحة شريحة؟','Why use Slide Master instead of formatting slide by slide?'),a:P('لتوحيد الشكل وتنعكس التعديلات على كل الشرائح.','It unifies the look and changes propagate to all slides.')}
+,{q:P('لماذا نتجنب الصفوف الفارغة قبل إنشاء PivotTable؟','Why avoid blank rows before creating a PivotTable?'),a:P('ليُقرأ النطاق جدولاً متصلاً بعناوين صحيحة.','So the range is read as one continuous table with headers.')}
+,{q:P('لماذا يحتاج الفيديو المضمّن من الإنترنت إلى اتصال؟','Why does an online video need a connection?'),a:P('لأنه يُبث من موقعه ولا يُحفظ داخل الملف.','It streams from its site and is not stored in the file.')}
+];
+
+// ---------- excel scenarios ----------
+const SC=[
+{t:P('مخزن قطع الغيار','Spare-Parts Warehouse'),h:['Code','Item','Qty','Price','Supplier'],pre:'P',n:['Filter','Battery','Brake Pad','Spark Plug','Oil Pump','Belt','Radiator','Clutch'],g:['Alpha','Beta','Gamma'],v1:[0,150],v2:[3,160,1],t1:[10,20],t2:[40,60],p:[90,120],w:['Reorder','Low','Available'],lb:P('الكمية','Qty')},
+{t:P('مبيعات متجر إلكترونيات','Electronics Store Sales'),h:['ID','Product','Units','Price','Branch'],pre:'S',n:['Laptop','Mouse','Keyboard','Monitor','Printer','Router','Webcam','Headset'],g:['North','South','East'],v1:[5,200],v2:[8,900,0],t1:[20,40],t2:[90,130],p:[400,700],w:['Slow','Normal','Top Seller'],lb:P('الوحدات','Units')},
+{t:P('درجات الطلاب','Student Grades'),h:['ID','Student','Score','Absences','Section'],pre:'U',n:['Ali','Sara','Omar','Huda','Yusuf','Mona','Khalid','Layla'],g:['A','B','C'],v1:[30,100],v2:[0,12,0],t1:[50,60],t2:[80,90],p:[5,8],w:['Fail','Pass','Excellent'],lb:P('الدرجة','Score')}];
+const WS=[
+{t:P('دعوات حفل التخرج','Graduation Invitations'),f:['Title','FirstName','LastName','Address','Date'],who:P('طلاب','students')},
+{t:P('إشعارات الرواتب','Salary Notices'),f:['Title','FirstName','LastName','Department','Salary'],who:P('موظفين','employees')},
+{t:P('إشعارات قاعات الامتحان','Exam Hall Notices'),f:['Title','FirstName','LastName','Hall','SeatNo'],who:P('طلاب','students')}];
+const PS=[
+{t:P('عرض مركز التدريب','Training Center Presentation'),b:P('اضغط للإجابة','Click for answer'),a:P('الإجابة','Answer')},
+{t:P('إطلاق منتج جديد','Product Launch Deck'),b:P('اكشف السعر','Reveal price'),a:P('السعر','Price')},
+{t:P('مناقشة مشروع التخرج','Graduation Project Defense'),b:P('اعرض النتيجة','Show result'),a:P('النتيجة','Result')}];
+const EF=['Fly In','Wheel','Zoom','Float In','Split','Wipe'],TE=['Fade','Zoom','Appear','Wipe'];
+
+// ---------- generate ----------
+function gen(seed){
+ R=rng(seed);const m={ver:seed};
+ m.mcq=shuf(MC).slice(0,5).map(x=>{const o=shuf([{t:x.ok,ok:1},...x.bad.map(t=>({t}))]);return{q:x.q,o,a:o.findIndex(z=>z.ok)}});
+ m.tf=shuf(TF).slice(0,5);m.ju=shuf(JU).slice(0,2);
+ // Excel
+ const S=pick(SC),nm=shuf(S.n).slice(0,6),vs=[];while(vs.length<6){const v=ri(S.v1[0],S.v1[1]);if(!vs.includes(v))vs.push(v)}
+ const rows=nm.map((n,i)=>({c:S.pre+(101+i),n,a:vs[i],b:+(S.v2[0]+R()*(S.v2[1]-S.v2[0])).toFixed(S.v2[2]),g:pick(S.g)}));
+ const t1=ri(...S.t1),t2=ri(...S.t2),p=ri(...S.p),g=pick(S.g),mm=pick(rows).a,k=ri(0,5),j=ri(0,5),u=ri(0,5),ir=ri(1,6),ic=ri(3,4),w=S.w,lb=S.lb;
+ const H=S.h,li=g=>g.join(',');
+ const f1=`=IF(C2<${t1},"${w[0]}",IF(C2<${t2},"${w[1]}","${w[2]}"))`,f2=`=IF(AND(E2="${g}",NOT(C2=${mm}),C2<${t2}),"Flag","-")`,f3=`=IF(OR(C2<${t1},D2>${p}),"Review","OK")`;
+ const r1=rows.map(r=>r.a<t1?w[0]:r.a<t2?w[1]:w[2]),r2=rows.map(r=>r.g==g&&r.a!=mm&&r.a<t2?'Flag':'-'),r3=rows.map(r=>(r.a<t1||r.b>p)?'Review':'OK');
+ const iv=rows[ir-1][ic==3?'a':'b'];
+ m.ex={t:S.t,rows,H,items:[
+ [4,P(`في F2: إذا ${lb[0]} < ${t1} تظهر «${w[0]}»، وإذا < ${t2} تظهر «${w[1]}»، وإلا «${w[2]}» (IF متداخلة).`,`F2: if ${lb[1]} < ${t1} show «${w[0]}», else if < ${t2} show «${w[1]}», else «${w[2]}» (nested IF).`),P(`${c(f1)} ← ${r1.join('، ')}`,`${c(f1)} → ${r1.join(', ')}`)],
+ [4,P(`في G2: «Flag» إذا كان ${H[4]} هو ${g} <b>و${lb[0]} ليست ${mm} (NOT)</b> وأقل من ${t2}، وإلا «-».`,`G2: «Flag» if ${H[4]} is ${g}, <b>${lb[1]} is NOT ${mm}</b>, and < ${t2}; otherwise «-».`),P(`${c(f2)} ← ${r2.join('، ')}`,`${c(f2)} → ${r2.join(', ')}`)],
+ [3,P(`في H2: «Review» إذا كانت ${lb[0]} < ${t1} <b>أو</b> ${H[3]} > ${p}، وإلا «OK».`,`H2: «Review» if ${lb[1]} < ${t1} <b>OR</b> ${H[3]} > ${p}, else «OK».`),P(`${c(f3)} ← ${r3.join('، ')}`,`${c(f3)} → ${r3.join(', ')}`)],
+ [3,P(`كُتب «${rows[k].n}» في J2؛ اكتب في K2 دالة INDEX/MATCH تُرجع ${H[0]}، ووضّح لماذا لا تصلح VLOOKUP.`,`J2 holds «${rows[k].n}»; in K2 use INDEX/MATCH to return the ${H[0]}. Explain why VLOOKUP is unsuitable.`),P(`${c('=INDEX(A2:A7,MATCH(J2,B2:B7,0))')} ← <b>${rows[k].c}</b>. ${H[0]} على يسار ${H[1]} وVLOOKUP لا ترجع يساراً.`,`${c('=INDEX(A2:A7,MATCH(J2,B2:B7,0))')} → <b>${rows[k].c}</b>. ${H[0]} is left of ${H[1]}; VLOOKUP cannot return leftwards.`)],
+ [2,P(`كُتب «${rows[j].c}» في J3؛ اكتب في K3 دالة VLOOKUP تُرجع ${H[4]}.`,`J3 holds «${rows[j].c}»; in K3 write a VLOOKUP returning ${H[4]}.`),P(`${c('=VLOOKUP(J3,A2:E7,5,FALSE)')} ← <b>${rows[j].g}</b>`,`${c('=VLOOKUP(J3,A2:E7,5,FALSE)')} → <b>${rows[j].g}</b>`)],
+ [5,P(`اذكر خطوات جعل E2:E7 تقبل فقط ${li(S.g)} عبر قائمة منسدلة، مع رسالة إدخال ورسالة خطأ من نوع Stop.`,`List the steps to restrict E2:E7 to ${li(S.g)} via a dropdown, with an input message and a Stop error alert.`),P(`حدّد E2:E7 ← Data ← Data Validation ← Settings: Allow = List ← Source: ${c(li(S.g))} مع In-cell dropdown ← Input Message (فعّل الخيار وأدخل العنوان والنص) ← Error Alert (فعّل الخيار، Style = Stop، العنوان والنص) ← OK.`,`Select E2:E7 → Data → Data Validation → Settings: Allow = List → Source: ${c(li(S.g))} with In-cell dropdown → Input Message (enable, title and text) → Error Alert (enable, Style = Stop, title and text) → OK.`)],
+ [4,P(`ما ناتج ${c(`=MATCH(${rows[u].a},C2:C7,0)`)} و${c(`=INDEX(A2:E7,${ir},${ic})`)}؟ ولماذا لا يُوثق بـ match_type = 1 على العمود C؟`,`What do ${c(`=MATCH(${rows[u].a},C2:C7,0)`)} and ${c(`=INDEX(A2:E7,${ir},${ic})`)} return? Why is match_type = 1 unreliable on column C?`),P(`<b>${u+1}</b> و<b>${iv}</b>. العمود C غير مرتب تصاعدياً.`,`<b>${u+1}</b> and <b>${iv}</b>. Column C is not sorted ascending.`)]]};
+ {const v4=[ri(10,99),ri(10,99),ri(10,99),ri(10,99)],n4=ri(1,4),srt=[];let a=ri(5,15);for(let z=0;z<5;z++){a+=ri(5,15);srt.push(a)}
+ const x=srt[ri(1,3)]+ri(1,4),pos=srt.filter(v=>v<=x).length,n1=ri(3,5),n2=n1+ri(3,5),y1=ri(2000,2010),y2=y1+ri(10,20);
+ m.ex.items.push(
+ [0,P(`في A1:D1 العناوين Q1..Q4 وفي A2:D2 القيم ${v4.join('، ')}. اكتب HLOOKUP تُرجع قيمة Q${n4}.`,`A1:D1 holds Q1..Q4 and A2:D2 holds ${v4.join(', ')}. Write an HLOOKUP returning Q${n4}.`),P(`${c(`=HLOOKUP("Q${n4}",A1:D2,2,FALSE)`)} ← <b>${v4[n4-1]}</b>`,`${c(`=HLOOKUP("Q${n4}",A1:D2,2,FALSE)`)} → <b>${v4[n4-1]}</b>`)],
+ [0,P(`B1:B5 مرتبة تصاعدياً: ${srt.join('، ')}. ما ناتج ${c(`=MATCH(${x},B1:B5,1)`)}؟ ولو كانت تنازلية ما قيمة match_type؟`,`B1:B5 is ascending: ${srt.join(', ')}. What does ${c(`=MATCH(${x},B1:B5,1)`)} return? What match_type is used for descending data?`),P(`<b>${pos}</b> (أكبر قيمة ≤ ${x}). للتنازلي: <b>-1</b>.`,`<b>${pos}</b> (largest value ≤ ${x}). Descending: <b>-1</b>.`)],
+ [0,P(`اجعل عمود ${H[1]} يقبل نصاً طوله بين ${n1} و${n2} حرفاً فقط.`,`Make column ${H[1]} accept text between ${n1} and ${n2} characters only.`),P(`حدّد العمود ← Data ← Data Validation ← Settings: Allow = <b>Text Length</b> ← between ← Minimum ${n1}، Maximum ${n2} ← OK.`,`Select the column → Data → Data Validation → Settings: Allow = <b>Text Length</b> → between → Minimum ${n1}, Maximum ${n2} → OK.`)],
+ [0,P(`اجعل خلية التاريخ تقبل تواريخ بين 1 يناير ${y1} و1 يناير ${y2} فقط.`,`Make the date cell accept dates between 1 Jan ${y1} and 1 Jan ${y2} only.`),P(`Data ← Data Validation ← Settings: Allow = <b>Date</b> ← between ← Start 1/1/${y1}، End 1/1/${y2} ← OK.`,`Data → Data Validation → Settings: Allow = <b>Date</b> → between → Start 1/1/${y1}, End 1/1/${y2} → OK.`)],
+ [0,P('اذكر خطوات حماية ورقة العمل بكلمة مرور من تبويب Review.','Give the steps to protect a worksheet with a password from the Review tab.'),P('افتح الورقة ← Review ← <b>Protect Sheet</b> ← أدخل كلمة المرور ← اختر ما يسمح به المستخدمون (الافتراضي: تحديد الخلايا المقفلة وغير المقفلة) ← OK ← أعد إدخال كلمة المرور ← OK.','Open the sheet → Review → <b>Protect Sheet</b> → enter a password → choose what users may do (default: select locked/unlocked cells) → OK → re-enter the password → OK.')],
+ [0,P('اذكر خطوات تشفير ملف Excel بكلمة مرور لا يُفتح بدونها.','Give the steps to encrypt an Excel file so it cannot be opened without a password.'),P('File ← Info ← Protect Workbook ← <b>Encrypt with Password</b> ← أدخل كلمة المرور ← OK ← أعد إدخالها ← OK.','File → Info → Protect Workbook → <b>Encrypt with Password</b> → enter the password → OK → re-enter it → OK.')],
+ [0,P(`أنشئ PivotTable يعرض مجموع ${H[2]} لكل ${H[4]}، واذكر كيف تحدّثه عند تغيّر البيانات.`,`Create a PivotTable showing the total ${H[2]} per ${H[4]}, and explain how to refresh it.`),P(`حدّد البيانات ← Insert ← <b>PivotTable</b> ← New Worksheet ← اسحب ${H[4]} إلى Rows و${H[2]} إلى Values (Sum). للتحديث: زر أيمن ← Refresh.`,`Select the data → Insert → <b>PivotTable</b> → New Worksheet → drag ${H[4]} to Rows and ${H[2]} to Values (Sum). To update: right-click → Refresh.`)]);
+ m.ex.items=take(m.ex.items,6,25);}
+
+ // Word
+ const W=pick(WS),N=ri(2,6),pg=ri(30,80),f=W.f,cl=ri(0,1);
+ m.wd={t:W.t,items:[
+ [8,P(`ترسل الجهة «${W.t[0]}» إلى ${N} ${W.who[0]}. الحقول: ${f.join(', ')}. اذكر خطوات إنشاء قائمة المستلمين الجديدة وربط الخطاب الرئيسي بها.`,`An office sends «${W.t[1]}» to ${N} ${W.who[1]}. Fields: ${f.join(', ')}. Give the steps to create the new recipient list and link the master letter.`),P(`Mailings ← Start Mail Merge ← Select Recipients ← <b>Type New List</b>؛ أدخل الحقول (${f.join(', ')}) واستخدم New Entry لكل سجل (${N} سجلات) ← OK واحفظ. ثم Start Mail Merge ← <b>Letters</b>، وSelect Recipients ← <b>Use Existing List</b>.`,`Mailings → Start Mail Merge → Select Recipients → <b>Type New List</b>; enter the fields (${f.join(', ')}), New Entry per record (${N} records) → OK and save. Then Start Mail Merge → <b>Letters</b>, Select Recipients → <b>Use Existing List</b>.`)],
+ [4,P(`كيف تُدرج ${f[0]} + ${f[1]} + ${f[2]} في سطر واحد ثم ${f[3]} في سطر جديد؟`,`How do you insert ${f[0]} + ${f[1]} + ${f[2]} on one line, then ${f[3]} on a new line?`),P(`Write &amp; Insert Fields ← Insert Merge Field: ${f[0]}، مسافة، ${f[1]}، مسافة، ${f[2]}، Enter، ${f[3]}، Enter.`,`Write &amp; Insert Fields → Insert Merge Field: ${f[0]}, space, ${f[1]}, space, ${f[2]}, Enter, ${f[3]}, Enter.`)],
+ [3,P('خطوات المعاينة وإنتاج خطاب مستقل لكل مستلم، وكم صفحة سينتج المستند؟','Steps to preview and produce a separate letter per recipient; how many pages result?'),P(`Preview Results ← Finish &amp; Merge ← Edit Individual Documents ← All ← OK. الناتج <b>${N}</b> صفحات.`,`Preview Results → Finish &amp; Merge → Edit Individual Documents → All → OK. Result: <b>${N}</b> pages.`)],
+ [5,P(`تقرير من ${pg} صفحة فيه جدول عريض: (1) Heading 1 للعناوين، (2) فهرس تلقائي في البداية، (3) صفحة واحدة أفقية فقط بترويسة مستقلة، (4) تحديث الفهرس بعد التعديل.`,`A ${pg}-page report with one wide table: (1) Heading 1 titles, (2) automatic TOC at the start, (3) one landscape page with its own header, (4) updating the TOC after edits.`),P('Heading 1 (Ctrl+Alt+1) ← References ← Table of Contents ← Insert Table of Contents ← Layout ← Breaks ← Next Page قبل صفحة الجدول وبعدها ← Orientation ← Landscape ← إلغاء Link to Previous ← References ← Update Table ← Update entire table.','Heading 1 (Ctrl+Alt+1) → References → Table of Contents → Insert Table of Contents → Layout → Breaks → Next Page before and after the table page → Orientation → Landscape → untick Link to Previous → References → Update Table → Update entire table.')]]};
+ {const tm=pick(['Data Analysis','Introduction','Network Security','Database']),sn=pick(['Lab Title','Report Heading','Note Box']),tn=pick(['report','invoice','memo']),cs=pick(['APA','MLA','Chicago']);
+ m.wd.items.push(
+ [0,P(`أنشئ نمطاً باسم «${sn}» من فقرة منسّقة، ثم اشرح كيف يصبح متاحاً في المستندات المستقبلية.`,`Create a style named «${sn}» from a formatted paragraph, then explain how to make it available in future documents.`),P('اضغط داخل الفقرة ← Home ← Styles gallery ← Create a Style ← الاسم ← OK (يبقى في المستند الحالي فقط). للمستقبل: Styles pane ← New Style داخل قالب ثم احفظه .dotx.','Click in the paragraph → Home → Styles gallery → Create a Style → name → OK (current document only). For the future: Styles pane → New Style inside a template, saved as .dotx.')],
+ [0,P(`احفظ المستند قالباً باسم «${tn}.dotx» ثم أنشئ منه مستنداً جديداً.`,`Save the document as a template named «${tn}.dotx» and create a new document from it.`),P(`File ← Save As ← Save as type: <b>Word Template (*.dotx)</b> ← الاسم ${tn} ← Save. للاستخدام: File ← Open ← Personal ← اختر القالب.`,`File → Save As → Save as type: <b>Word Template (*.dotx)</b> → name ${tn} → Save. To use: File → Open → Personal → select the template.`)],
+ [0,P(`علّم المصطلح «${tm}» كل ظهور له، وأدرج فهرساً بعمودين في نهاية المستند، وكيف تحدّثه.`,`Mark the term «${tm}» at every occurrence, insert a two-column index at the end, and explain how to update it.`),P('حدّد المصطلح ← References ← Mark Entry (Alt+Shift+X) ← <b>Mark All</b> ← أغلق ← ضع المؤشر في النهاية ← Insert Index ← Columns = 2 ← OK. للتحديث: زر أيمن ← Update Field (أو Ctrl+A ثم F9).','Select the term → References → Mark Entry (Alt+Shift+X) → <b>Mark All</b> → close → cursor at the end → Insert Index → Columns = 2 → OK. Update: right-click → Update Field (or Ctrl+A then F9).')],
+ [0,P(`أضف مصدراً (مقالة علمية) وأدرج اقتباساً وقائمة مراجع بنمط ${cs}.`,`Add a journal-article source, insert a citation and a bibliography in ${cs} style.`),P(`References ← Style = ${cs} ← Insert Citation ← <b>Add New Source</b> ← Journal Article ← الحقول ← OK ← Insert Citation ← اختر المصدر. للإدارة: Manage Sources (Master List / Current List).`,`References → Style = ${cs} → Insert Citation → <b>Add New Source</b> → Journal Article → fields → OK → Insert Citation → pick the source. Manage: Manage Sources (Master List / Current List).`)],
+ [0,P('اجعل ترقيم صفحات المقدمة بأرقام رومانية وفصول التقرير تبدأ من 1.','Make the introduction use Roman page numbers and the chapters restart at 1.'),P('Layout ← Breaks ← Next Page بعد المقدمة ← Insert ← Page Number ← <b>Format Page Numbers</b> ← اختر i, ii ← للفصول: Arabic ← Start at = 1.','Layout → Breaks → Next Page after the introduction → Insert → Page Number → <b>Format Page Numbers</b> → choose i, ii → chapters: Arabic → Start at = 1.')],
+ [0,P('اذكر اختصارات: Heading 2 وNormal ورفع/خفض مستوى العنوان.','Give the shortcuts for Heading 2, Normal, and promoting/demoting a heading.'),P('Heading 2: Ctrl+Alt+2 — Normal: Ctrl+Shift+N — رفع: Alt+Shift+← — خفض: Alt+Shift+→.','Heading 2: Ctrl+Alt+2 — Normal: Ctrl+Shift+N — Promote: Alt+Shift+← — Demote: Alt+Shift+→.')]);
+ m.wd.items=take(m.wd.items,4,20);}
+
+ // PowerPoint
+ const Q=pick(PS),e=shuf(EF),te=pick(TE),au=ri(0,1);
+ m.pp={t:Q.t,items:[
+ [8,P(`في «${Q.t[0]}» تريد خطاً وألواناً موحّدة لكل الشرائح، ورقم الشريحة في الأسفل، وتخطيطاً جديداً فيه مكان لصورة. اذكر خطوات Slide Master.`,`In «${Q.t[1]}» you want one font and color scheme, a slide number at the bottom, and a new layout with a picture placeholder. Give the Slide Master steps.`),P('View ← Slide Master ← الشريحة العليا (Theme) ← Fonts ثم Colors ← نسّق placeholders الأسفل (Date, Footer, Slide Number) ← تخطيط جديد ← Placeholders ← Picture ← Close Master View ← Home ← Layout.','View → Slide Master → top Theme slide → Fonts then Colors → format bottom placeholders (Date, Footer, Slide Number) → new layout → Placeholders → Picture → Close Master View → Home → Layout.')],
+ [6,P(`شريحة فيها زر «${Q.b[0]}» ومربع نص «${Q.a[0]}»؛ اجعل النص يظهر بتأثير ${te} <b>فقط عند الضغط على الزر</b>.`,`A slide has a button «${Q.b[1]}» and a text box «${Q.a[1]}»; make the text appear with ${te} <b>only when the button is clicked</b>.`),P(`حدّد مربع النص ← Animations ← ${te} (Entrance) ← Trigger ← On Click of ← اختر الزر. تظهر أيقونة المشغّل للتأكيد.`,`Select the text box → Animations → ${te} (Entrance) → Trigger → On Click of → choose the button. A trigger icon confirms it.`)],
+ [5,P(`العنوان بتأثير ${e[0]} والنقاط بتأثير ${e[1]}. كيف تنسخ تأثيراً إلى كائنات أخرى بسرعة؟ وكيف تجعل النص يبدأ تلقائياً بعد العنوان وتعيد الترتيب؟`,`Title uses ${e[0]}, bullets use ${e[1]}. How do you copy an effect to other objects quickly? How do you make the text start automatically after the title and reorder effects?`),P('Animation Painter: حدّد الكائن ← Animation Painter ← انقر الهدف. Animation Pane: اختر التأثير ← Start After Previous ← Move Earlier/Later ← Effect Options ← Timing.','Animation Painter: select the object → Animation Painter → click the target. Animation Pane: select the effect → Start After Previous → Move Earlier/Later → Effect Options → Timing.')],
+ [6,au?P('أدرج تسجيلاً صوتياً من حاسوبك ليعمل تلقائياً، واقتطع جزءاً، وأضف تلاشياً، وأخفِ الأيقونة أثناء العرض.','Insert an audio file from your PC to play automatically, trim it, add fades, and hide the icon during the show.'):P('أدرج محاضرة مسجّلة من حاسوبك لتعمل تلقائياً، واقتطع جزءاً، وأضف تلاشياً، وبيّن كيف تُبقي الملف صغيراً.','Insert a recorded lecture from your PC to play automatically, trim it, add fades, and show how to keep the file small.'),au?P('Insert ← Audio ← Audio on My PC ← Playback: Start Automatically + Trim Audio + Fade In/Out + Hide During Show.','Insert → Audio → Audio on My PC → Playback: Start Automatically + Trim Audio + Fade In/Out + Hide During Show.'):P('Insert ← Video ← Video on My PC ← Playback: Play Automatically + Trim Video + Fade In/Out. لتصغير الحجم: سهم Insert ← Link to File.','Insert → Video → Video on My PC → Playback: Play Automatically + Trim Video + Fade In/Out. To keep it small: Insert dropdown → Link to File.')]]};
+ {const tr=pick(['Fade','Push','Wipe','Split']),sc=ri(3,10);
+ m.pp.items.push(
+ [0,P(`طبّق انتقال ${tr} على كل الشرائح مع تقدّم تلقائي بعد ${sc} ثوانٍ.`,`Apply a ${tr} transition to all slides with automatic advance after ${sc} seconds.`),P(`Transitions ← اختر ${tr} ← Effect Options ← Timing: <b>Apply to All</b> ← فعّل After وأدخل ${sc} ثوانٍ ← Preview.`,`Transitions → choose ${tr} → Effect Options → Timing: <b>Apply to All</b> → tick After and enter ${sc} seconds → Preview.`)],
+ [0,P('أضف تأثيراً ثانياً لنفس الكائن دون حذف الأول، ثم اشرح معنى الأرقام بجانبه.','Add a second effect to the same object without removing the first, and explain the numbers beside it.'),P('حدّد الكائن ← Animations ← <b>Add Animation</b> ← اختر التأثير. الأرقام تدل على ترتيب تنفيذ التأثيرات.','Select the object → Animations → <b>Add Animation</b> → pick the effect. The numbers show the order in which effects run.')],
+ [0,P('سجّل جزءاً من الشاشة بصوت ومؤشر وأدرجه في الشريحة، وكيف توقفه؟','Record part of the screen with audio and pointer into a slide; how do you stop it?'),P('Insert ← <b>Screen Recording</b> ← Select Area (Windows+Shift+A) ← فعّل Audio وRecord Pointer ← Record ← إيقاف: Windows+Shift+Q (إيقاف مؤقت: Windows+Shift+R) ← بزر أيمن Save Media As.','Insert → <b>Screen Recording</b> → Select Area (Windows+Shift+A) → enable Audio and Record Pointer → Record → stop: Windows+Shift+Q (pause: Windows+Shift+R) → right-click → Save Media As.')],
+ [0,P('شارك العرض عبر رابط للعرض فقط ثم أبطل الرابط لاحقاً.','Share the presentation via a view-only link, then revoke it later.'),P('OneDrive ← حدّد الملف ← Share ← ألغِ Allow Editing ← Get a Link ← Copy. للإبطال: Details pane ← Manage Access ← <b>Remove Link</b>.','OneDrive → select the file → Share → untick Allow Editing → Get a Link → Copy. To revoke: Details pane → Manage Access → <b>Remove Link</b>.')],
+ [0,P('اذكر خطوات توليد عرض بأداة Gamma AI وتصديره.','Give the steps to generate a deck with Gamma AI and export it.'),P('افتح gamma.ai ← أدخل موضوعاً/مخططاً/رابطاً (Prompt) ← اختر القالب ← ولّد المسودة ← عدّل عبر المحادثة ← صدّر PPTX أو PDF أو Google Slides.','Open gamma.ai → enter a prompt/outline/URL → choose a theme → generate the draft → edit via chat → export to PPTX, PDF or Google Slides.')],
+ [0,P('أدرج فيديو من الإنترنت في شريحة، وما شرط تشغيله؟','Insert an online video into a slide; what is the playback requirement?'),P('Insert ← Video ← <b>Online Video</b> ← الصق الرابط ← Insert ← غيّر الحجم والموضع. يحتاج اتصالاً فعّالاً بالإنترنت.','Insert → Video → <b>Online Video</b> → paste the URL → Insert → resize and position. It needs an active internet connection.')],
+ [0,P('أضف في Slide Master مكان جدول ومكان رسم بياني إلى تخطيط جديد.','In Slide Master, add a table placeholder and a chart placeholder to a new layout.'),P('View ← Slide Master ← تخطيط جديد ← Insert Placeholder ← <b>Table</b> ثم <b>Chart</b> ← Close Master View ← Home ← Layout.','View → Slide Master → new layout → Insert Placeholder → <b>Table</b> then <b>Chart</b> → Close Master View → Home → Layout.')]);
+ m.pp.items=take(m.pp.items,4,25);}
+
+ return m;
+}
+
+// ---------- render ----------
+function sub(items,i,u,key){return '<ul>'+items.map(x=>`<li><b>(${x[0]}${u.d})</b> ${key?x[2][i]:x[1][i]}</li>`).join('')+'</ul>'}
+function render(){
+ const i=L=='ar'?0:1,u=U[L],ex=M.ex,tb=`<table><tr>${ex.H.map(h=>`<th>${h}</th>`).join('')}</tr>${ex.rows.map(r=>`<tr><td>${r.c}</td><td>${r.n}</td><td>${r.a}</td><td>${r.b}</td><td>${r.g}</td></tr>`).join('')}</table>`;
+ const ei=M.ex.items.map(x=>[x[0],x[1],x[2]]),wi=M.wd.items,pi=M.pp.items;
+ let h=`<div class="head"><div class="brand">Cipher ⁷³</div><b>${u.uni}</b><br>${u.dept}<br>${u.course} — ${u.ver} <b>${M.ver}</b><br>${u.time}<br><i>${u.by}: Cipher ⁷³</i></div>
+ <h2>${u.p1}</h2><h3>${u.q1}</h3><ol>${M.mcq.map(x=>`<li>${x.q[i]}<br>${x.o.map((o,k)=>`${u.L[k]}) ${T(o.t,i)}`).join(' &nbsp; ')}</li>`).join('')}</ol>
+ <h3>${u.q2}</h3><ol>${M.tf.map(x=>`<li>${x.s[i]}</li>`).join('')}</ol>
+ <h3>${u.q3}</h3><ol>${M.ju.map(x=>`<li>${x.q[i]}</li>`).join('')}</ol>
+ <h2>${u.p2}</h2><h3>${u.t[0]} — ${ex.t[i]} (25${u.d})</h3><p>${u.dt}</p>${tb}<p>${u.ex}</p>${sub(ex.items,i,u,0)}
+ <h3>${u.t[1]} — ${M.wd.t[i]} (20${u.d})</h3>${sub(wi,i,u,0)}
+ <h3>${u.t[2]} — ${M.pp.t[i]} (25${u.d})</h3>${sub(pi,i,u,0)}`;
+ if(SHOW){h+=`<div class="key"><h2>🔑 ${u.kh}</h2><p><b>Q1:</b> ${M.mcq.map((x,k)=>`${k+1}-${u.L[x.a]}`).join(' ، ')}</p>
+ <p><b>Q2:</b></p><ol>${M.tf.map(x=>`<li>${x.t?u.tr:u.fa+' — '+x.f[i]}</li>`).join('')}</ol>
+ <p><b>Q3:</b></p><ol>${M.ju.map(x=>`<li>${x.a[i]}</li>`).join('')}</ol>
+ <h3>${u.t[0]}</h3>${sub(ex.items,i,u,1)}<h3>${u.t[1]}</h3>${sub(wi,i,u,1)}<h3>${u.t[2]}</h3>${sub(pi,i,u,1)}<p>${u.tot}</p></div>`}
+ h+=`<div class="sig">— Cipher ⁷³ —</div>`;
+ document.getElementById('out').innerHTML=h;
+}
+// key answers are stored at index 2 in each item
+function fix(m){[m.ex.items,m.wd.items,m.pp.items].forEach(a=>{});return m}
+function setL(l){L=l;const u=U[l];document.documentElement.lang=l;document.documentElement.dir=l=='ar'?'rtl':'ltr';
+ bAr.className=l=='ar'?'on':'';bEn.className=l=='en'?'on':'';tag.textContent=u.tag;bKey.textContent=u.key;bPr.textContent=u.pr;bGen.textContent=u.gen;render()}
+function toggleKey(){SHOW=!SHOW;render()}
+function newExam(){M=fix(gen(1000+Math.floor(Math.random()*9000)));SHOW=false;render()}
+M=gen(1000+Math.floor(Math.random()*9000));setL('ar');
+</script>
+</body>
+</html>
